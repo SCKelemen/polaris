@@ -46,8 +46,6 @@ func (u Vertex) Print() {
 	}
 }
 
-func (u Vertex) Dispatch(message)
-
 // Exception is an error type for this package
 type Exception string
 
