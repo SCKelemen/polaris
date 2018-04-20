@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	msgs "github.com/SCKelemen/messages"
 )
 
 // Dispatcher implements the notifier/subscriber pattern
@@ -14,11 +16,11 @@ type Dispatcher struct {
 
 // New creates a new Dispatcher
 func New() Dispatcher {
-	return Dispatcher{}
+	return Dispatcher{subscriptions: make(map[string]string)}
 }
 
 // Dispatch sends the message to all subscribers
-func (d Dispatcher) Dispatch(message Message) error {
+func (d Dispatcher) Dispatch(message msgs.Message) error {
 	json, err := json.Marshal(message)
 	if err == nil {
 		for _, subscriber := range d.subscriptions {

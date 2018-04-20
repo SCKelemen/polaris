@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 
+	msgs "github.com/SCKelemen/messages"
 	"github.com/SCKelemen/polaris/dispatch"
-	"github.com/SCKelemen/polaris/graph"
 	"github.com/gin-gonic/gin"
-	"github.com/sckelemen/polaris/messages"
 )
 
 func main() {
@@ -14,13 +14,32 @@ func main() {
 
 	router := gin.Default()
 	router.POST("/graph", func(c *gin.Context) {
-		var ent entry
-		c.BindJSON(&ent)
-		g := graph.NewVertex(ent.Name, ent.Address)
-		json, _ := json.Marshal(g)
-		message := dispatch.Message{Type: messages.NewNode, Data: string(json)}
-		dispatcher.Dispatch(message)
-		dispatcher.Subscribe(g.ID, g.Address)
+
+		var msg msgs.Message
+		c.BindJSON(&msg)
+
+		switch msg.Type {
+		case msgs.BirthMessageType:
+			var data msgs.BirthData
+			err := json.Unmarshal(msg.Data, &data)
+			if err != nil {
+				c.Status(400)
+			}
+			fmt.Printf("BIRTH: %s %s", data.Name, data.Address)
+			dispatcher.Dispatch(msg)
+			dispatcher.Subscribe(data.Name, data.Address)
+			break
+		case msgs.DeathMessageType:
+			//fmt.Printf("DEATH: %s %s", data.Name, data.Address)
+			dispatcher.Dispatch(msg)
+			break
+		case msgs.SuicideMessageType:
+			//fmt.Printf("SUICIDE: %s %s", data.Name, data.Address)
+			dispatcher.Dispatch(msg)
+			break
+		default:
+			break
+		}
 		c.Status(200)
 	})
 	router.Run(":9999")
